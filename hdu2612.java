@@ -1,384 +1,141 @@
- Home
-Problem
-Status
-Contest
-User
-Group
-Forum
-Article
-Logout
-crazyjerryh
-Begin: 2015-12-28 18:00 CST
-Rotile 训练1[简单搜索]
-End: 2016-02-26 18:00 CST
-1440:00:00
-Ended
-Overview
-Problem
-Status
-Rank (1440:00:00)
-0 Comments
-Previous12345…Next
-Run ID    Username
 
-Prob
-    Result 
-    Time
-(ms)    Mem
-(MB)    Length    Lang 
-    Submit Time
-15273529    
-crazyjerryh
-N
-Accepted
-452    14    2463    
-Java
-2 days ago
-15273464    
-crazyjerryh
-N
-Wrong Answer
-2431    
-Java
-2 days ago
-15273452    
-crazyjerryh
-N
-Wrong Answer
-2431    
-Java
-2 days ago
-15273409    
-crazyjerryh
-N
-Accepted
-93    2.2    1579    
-C++
-2 days ago
-15273408    
-crazyjerryh
-N
-Compilation Error
-1579    
-Java
-2 days ago
-15273345    
-crazyjerryh
-N
-Wrong Answer
-3059    
-Java
-2 days ago
-15273336    
-crazyjerryh
-N
-Wrong Answer
-3103    
-Java
-2 days ago
-15273155    
-crazyjerryh
-N
-Wrong Answer
-2698    
-Java
-2 days ago
-15273124    
-crazyjerryh
-N
-Wrong Answer
-2576    
-Java
-2 days ago
-15273117    
-crazyjerryh
-N
-Compilation Error
-2575    
-Java
-2 days ago
-           
-All Copyright Reserved ©2018 Xu Han
-Server Time: 2018-08-09 23:03:04 CST
-
-#15273529 | crazyjerryh's solution for [HDU-2612] [Problem N]
-Status
-Accepted
-Time
-452ms
-Memory
-14020kB
-Length
-2463
-Lang
-Java
-Submitted
-2018-08-08 00:10:41
-Shared
-
-RemoteRunId
-25759022
-Select Code
-//package org.powerhackers;
-
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
-public class Main{
+public class Main
+{
     public static void main( String[] args )
     {
         Scanner scanner = new Scanner(System.in);
-        while(scanner.hasNextInt()) {
-            int m = scanner.nextInt();
-            int n = scanner.nextInt();
-            char map[][] = new char[m][n];
-            scanner.nextLine();
+        while(true) {
+            Cap base = new Cap();
+            int a = base.c[0] = scanner.nextInt();
+            int b = base.c[1] = scanner.nextInt();
+            int c = base.c[2] = scanner.nextInt();
 
-            point start1 = new point();
-            point start2 = new point();
-            for(int i = 0; i < m; i++) {
-                String line = scanner.nextLine();
-                map[i] = line.toCharArray();
-                if(line.contains("Y")) {
-                    start1.x = i;
-                    start1.y = line.indexOf('Y');
-                }
-
-                if(line.contains("M")) {
-                    start2.x = i;
-                    start2.y = line.indexOf('M');
-                }
+            if(a == 0 && b == 0 && c == 0) {
+                break;
             }
 
-            int dis1[][] = new int[m][n];
-            int dis2[][] = new int[m][n];
-
-            bibfs(start1, m, n, map, dis1);
-            bibfs(start2, m, n, map, dis2);
-
-            int dis = Integer.MAX_VALUE;
-            for(int i = 0; i < m; i++) {
-                for(int j = 0; j < n; j++) {
-                    if(map[i][j] == '@' && (dis1[i][j] + dis2[i][j]) > 0) {
-                        dis = Math.min(dis, dis1[i][j] + dis2[i][j]);
-                    }
-                }
+            int [][][]dp = new int[a+1][b+1][c+1];
+            int [][][]vis = new int[a+1][b+1][c+1];
+            init(dp, a, b, c);
+            Cap cur = new Cap();
+            cur.c[0] = a;
+            dfs(base, cur, dp, vis);
+            int depth = dp[a][0][0];
+            if(depth >= 0xffff) {
+                System.out.println("NO");
+            } else {
+                System.out.println(depth - 1);
             }
+        }
+    }
 
-            System.out.println(dis * 11);
+    public static void init(int dp[][][], int a, int b, int c) {
+       for(int i = 0; i <=a; i++) {
+           for(int j = 0; j <= b; j++) {
+               for(int k = 0; k <= c; k++) {
+                   dp[i][j][k] = 0xffff;
+               }
+           }
+       }
+    }
+
+    public static class Cap {
+        int c[];
+        public Cap() {
+            c = new int[3];
+        }
+
+        public void set(int nc[]) {
+            c[0] = nc[0];
+            c[1] = nc[1];
+            c[2] = nc[2];
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(c[0]).append(",");
+            sb.append(c[1]).append(",");
+            sb.append(c[2]);
+            return sb.toString();
         }
     }
 
-    public static class point {
-        int x;
-        int y;
-    }
-
-    public static void bibfs(point s1, int m, int n, char [][]map, int [][]dis) {
-        int dir[][] = {
-            {0,1},{1,0},{0,-1},{-1,0}
-        };
-        Queue<point> queue = new LinkedList<>();
-        queue.offer(s1);
-        while(!queue.isEmpty()) {
-            point f = queue.poll();
-            int x = f.x;
-            int y = f.y;
-
-            for(int i = 0; i < 4; i++) {
-                int nx = x + dir[i][0];
-                int ny = y + dir[i][1];
-                if(nx < 0 || ny < 0 || nx >= m || ny >=n) {
-                    continue;
-                }
-
-                if(dis[nx][ny] != 0 || map[nx][ny] == '#') {
-                    continue;
-                }
-                point np = new point();
-                np.x = nx;
-                np.y = ny;
-                queue.offer(np);
-                dis[nx][ny] = dis[x][y] + 1;
-            }
+    public static void dfs(Cap base, Cap cur, int dp[][][], int vis[][][]) {
+        if(isTarget(cur)) {
+            dp[cur.c[0]][cur.c[1]][cur.c[2]] = 1;
+            return;
         }
 
+        if(dp[cur.c[0]][cur.c[1]][cur.c[2]] < 0xffff) {
+            return;
+        }
+
+        if(checkVis(cur, vis)) {
+            return;
+        }
+
+        vis[cur.c[0]][cur.c[1]][cur.c[2]] = 1;
+        List<Cap> caps = new ArrayList<>();
+        index(base, cur, caps);
+        //System.out.println(cur + ";" + caps);
+        int res = 0xffff;
+        for(Cap cap : caps) {
+            dfs(base, cap, dp, vis);
+            int tmp = dp[cap.c[0]][cap.c[1]][cap.c[2]];
+            res = Math.min(tmp + 1 , res);
+        }
+        dp[cur.c[0]][cur.c[1]][cur.c[2]] = res;
+        vis[cur.c[0]][cur.c[1]][cur.c[2]] = 0;
     }
-}
-Select Code
-//package org.powerhackers;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Scanner;
+    public static boolean isTarget(Cap cur) {
+        if(cur.c[0] == 0 && cur.c[1] == cur.c[2]) {
+            return true;
+        }
 
-public class Main{
-    public static void main( String[] args )
-    {
-        Scanner scanner = new Scanner(System.in);
-        while(scanner.hasNextInt()) {
-            int m = scanner.nextInt();
-            int n = scanner.nextInt();
-            char map[][] = new char[m][n];
-            scanner.nextLine();
+        if(cur.c[1] == 0 && cur.c[0] == cur.c[2]) {
+            return true;
+        }
 
-            point start1 = new point();
-            point start2 = new point();
-            for(int i = 0; i < m; i++) {
-                String line = scanner.nextLine();
-                map[i] = line.toCharArray();
-                if(line.contains("Y")) {
-                    start1.x = i;
-                    start1.y = line.indexOf('Y');
+        if(cur.c[2] == 0 && cur.c[0] == cur.c[1]) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean checkVis(Cap cap, int dp[][][]) {
+        if(dp[cap.c[0]][cap.c[1]][cap.c[2]] == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public static void index(Cap base, Cap cur, List<Cap> caps) {
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(i == j) continue;
+                int nc[] = new int[3];
+                nc[0] = cur.c[0];
+                nc[1] = cur.c[1];
+                nc[2] = cur.c[2];
+
+                if(nc[i] + nc[j] <= base.c[j]){
+                    nc[j] = nc[i] + nc[j];
+                    nc[i] = 0;
+                } else {
+                    nc[i] = nc[i] + nc[j] - base.c[j];
+                    nc[j] = base.c[j];
                 }
-
-                if(line.contains("M")) {
-                    start2.x = i;
-                    start2.y = line.indexOf('M');
-                }
+                Cap ncap = new Cap();
+                ncap.set(nc);
+                caps.add(ncap);
             }
-
-            int dis1[][] = new int[m][n];
-            int dis2[][] = new int[m][n];
-
-            bibfs(start1, m, n, map, dis1);
-            bibfs(start2, m, n, map, dis2);
-
-            int dis = Integer.MAX_VALUE;
-            for(int i = 0; i < m; i++) {
-                for(int j = 0; j < n; j++) {
-                    if(map[i][j] == '@' && (dis1[i][j] + dis2[i][j]) > 0) {
-                        dis = Math.min(dis, dis1[i][j] + dis2[i][j]);
-                    }
-                }
-            }
-
-            System.out.println(dis * 11);
         }
     }
 
-    public static class point {
-        int x;
-        int y;
-    }
-
-    public static void bibfs(point s1, int m, int n, char [][]map, int [][]dis) {
-        int dir[][] = {
-            {0,1},{1,0},{0,-1},{-1,0}
-        };
-        Queue<point> queue = new LinkedList<>();
-        queue.offer(s1);
-        while(!queue.isEmpty()) {
-            point f = queue.poll();
-            int x = f.x;
-            int y = f.y;
-
-            for(int i = 0; i < 4; i++) {
-                int nx = x + dir[i][0];
-                int ny = y + dir[i][1];
-                if(nx < 0 || ny < 0 || nx >= m || ny >=n) {
-                    continue;
-                }
-
-                if(dis[nx][ny] != 0 || map[nx][ny] == '#') {
-                    continue;
-                }
-                point np = new point();
-                np.x = nx;
-                np.y = ny;
-                queue.offer(np);
-                dis[nx][ny] = dis[x][y] + 1;
-            }
-        }
-
-    }
-}
-Select Code
-//package org.powerhackers;
-
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Scanner;
-
-public class Main{
-    public static void main( String[] args )
-    {
-        Scanner scanner = new Scanner(System.in);
-        while(scanner.hasNextInt()) {
-            int m = scanner.nextInt();
-            int n = scanner.nextInt();
-            char map[][] = new char[m][n];
-            scanner.nextLine();
-
-            point start1 = new point();
-            point start2 = new point();
-            for(int i = 0; i < m; i++) {
-                String line = scanner.nextLine();
-                map[i] = line.toCharArray();
-                if(line.contains("Y")) {
-                    start1.x = i;
-                    start1.y = line.indexOf('Y');
-                }
-
-                if(line.contains("M")) {
-                    start2.x = i;
-                    start2.y = line.indexOf('M');
-                }
-            }
-
-            int dis1[][] = new int[m][n];
-            int dis2[][] = new int[m][n];
-
-            bibfs(start1, m, n, map, dis1);
-            bibfs(start2, m, n, map, dis2);
-
-            int dis = Integer.MAX_VALUE;
-            for(int i = 0; i < m; i++) {
-                for(int j = 0; j < n; j++) {
-                    if(map[i][j] == '@' && (dis1[i][j] + dis2[i][j]) > 0) {
-                        dis = Math.min(dis, dis1[i][j] + dis2[i][j]);
-                    }
-                }
-            }
-
-            System.out.println(dis * 11);
-        }
-    }
-
-    public static class point {
-        int x;
-        int y;
-    }
-
-    public static void bibfs(point s1, int m, int n, char [][]map, int [][]dis) {
-        int dir[][] = {
-            {0,1},{1,0},{0,-1},{-1,0}
-        };
-        Queue<point> queue = new LinkedList<>();
-        queue.offer(s1);
-        while(!queue.isEmpty()) {
-            point f = queue.poll();
-            int x = f.x;
-            int y = f.y;
-
-            for(int i = 0; i < 4; i++) {
-                int nx = x + dir[i][0];
-                int ny = y + dir[i][1];
-                if(nx < 0 || ny < 0 || nx >= m || ny >=n) {
-                    continue;
-                }
-
-                if(dis[nx][ny] != 0 || map[nx][ny] == '#') {
-                    continue;
-                }
-                point np = new point();
-                np.x = nx;
-                np.y = ny;
-                queue.offer(np);
-                dis[nx][ny] = dis[x][y] + 1;
-            }
-        }
-
-    }
 }
